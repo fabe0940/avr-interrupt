@@ -4,22 +4,27 @@
 #include <stdlib.h>
 #include "timer.h"
 
-uint8_t state;
-uint32_t delay;
 void init(void);
+
+extern volatile uint8_t cnt;
 
 int main(void) {
 	init();
 
 	while (1) {
-		PORTB = 0x00;
+		PORTB = ~(cnt << 4);
 	}
 	
 	exit(0);
 }
 
 void init(void) {
+	DDRA = 0x00;
+	DDRB = 0xFF;
+
 	timerInit();
 
-	DDRB = 0xFF;
+	sei();
+
+	return;
 }
