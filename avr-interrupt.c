@@ -12,7 +12,7 @@ int main(void) {
 	init();
 
 	while (1) {
-		PORTB = ~(cnt << 4);
+		PORTB = ~((cnt << 4) | (~PINA & 0x0F));
 	}
 	
 	exit(0);
