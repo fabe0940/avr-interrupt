@@ -45,8 +45,62 @@ table.
 +-------------+------+
 | FUNCTION    | SIZE |
 +-------------+------+
-| ???         |    ? |
+| __vector_11 |   66 |
+| init        |   40 |
+| timerInit   |   70 |
+| main        |   60 |
 +-------------+------+
+
+Note that the function __vector_11 is the TIMER0 overflow ISR.
+
+The assembly code for __vector_11 is as follows:
+> .global	__vector_11
+> 	.type	__vector_11, @function
+> __vector_11:
+> 	push r1
+> 	push r0
+> 	lds r0,95
+> 	push r0
+> 	clr __zero_reg__
+> 	push r24
+> 	push r28
+> 	push r29
+> 	in r28,__SP_L__
+> 	in r29,__SP_H__
+> /* prologue: Signal */
+> /* frame size = 0 */
+> /* stack size = 6 */
+> .L__stack_usage = 6
+> 	lds r24,overflowCnt
+> 	subi r24,lo8(-(1))
+> 	sts overflowCnt,r24
+> 	andi r24,lo8(15)
+> 	tst r24
+> 	brne .L3
+> 	lds r24,cnt
+> 	subi r24,lo8(-(1))
+> 	sts cnt,r24
+> .L3:
+> /* epilogue start */
+> 	pop r29
+> 	pop r28
+> 	pop r24
+> 	pop r0
+> 	sts 95,r0
+> 	pop r0
+> 	pop r1
+> 	reti
+> 	.size	__vector_11, .-__vector_11
+> 	.ident	"GCC: (Fedora 4.9.2-1.el7.lux.1) 4.9.2"
+
+This takes 27 assembly instructions total, 18 of which are prologue and epilogue
+instructions to manage the various general purpose registers properly. Only
+9 instructions are used to actually process the ISR.
+
+With the clock set to 1MHz and the timer prescaler set to 256, this means the
+overflow ISR is called just under 16 times every second. Thus, 432 out of every
+1,000,000 instructions are part of this ISR, and it takes just over 0.04% of
+the processor's time.
 
 
 DOCUMENTATION
